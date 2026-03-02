@@ -1,23 +1,55 @@
-// Projeto Nexus - API de Redirecionamento
-// Versão: 1.1
-export default function handler(req, res) {
-  // Permite que o App Nexus e o VLC acessem sem bloqueios
+/**
+ * Projeto Nexus - API de Redirecionamento e Extrator (Scraping)
+ * Versão: 1.2
+ */
+export default async function handler(req, res) {
+  // Permissões para não ser bloqueado
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
 
   const { id } = req.query;
 
-  // FILME: HOMEM-ARANHA (Seu link real com token)
-  if (id === 'aranha') {
-    return res.redirect('https://be7713.rcr82.waw05.r66nv9ed.com/hls2/06/02621/qsf7x3z14qeq_x/master.m3u8?t=CQ_VdzL8mrVovn8qHzXacnDQNPA3eVgrBkPytXRkGKE&s=1772366146&e=10800&f=49614634&srv=1075&asn=&sp=5500&p=0');
+  // -------------------------------------------------------------
+  // O CAMINHO AVANÇADO: EXTRAÇÃO EM TEMPO REAL
+  // -------------------------------------------------------------
+  if (id === 'homem-aranha') {
+    try {
+      // 1. Aqui você coloca o link da página do PLAYER do filme (não o m3u8)
+      // Nota: Precisa ser o link direto da página onde o vídeo roda no Pobreflix/RedeCanais
+      const urlDaPaginaDoPlayer = 'COLOQUE_AQUI_O_LINK_DA_PAGINA_DO_FILME_NO_SITE';
+      
+      // 2. O servidor vai até o site e baixa o HTML da página
+      const resposta = await fetch(urlDaPaginaDoPlayer, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36' // Disfarce de navegador humano
+        }
+      });
+      const htmlDaPagina = await resposta.text();
+
+      // 3. O "Radar" (Regex) que procura qualquer link que termine em .m3u8 dentro do código do site
+      const radarDeLinks = /(https:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*)/i;
+      const linkCapturado = htmlDaPagina.match(radarDeLinks);
+
+      // 4. Se ele achar o link com o token novo, redireciona para o app
+      if (linkCapturado && linkCapturado[0]) {
+        return res.redirect(linkCapturado[0]);
+      } else {
+        return res.status(404).send('Erro: O robô não conseguiu achar o link .m3u8 dentro dessa página.');
+      }
+
+    } catch (erro) {
+      return res.status(500).send('Erro interno na hora de invadir a página: ' + erro.message);
+    }
   }
 
-  // FILME: TESTE DE VÍDEO (Um link m3u8 aberto que nunca cai, para garantirmos que o player lê)
+  // -------------------------------------------------------------
+  // NOSSO VÍDEO DE TESTE GARANTIDO
+  // -------------------------------------------------------------
   if (id === 'filmeteste') {
     return res.redirect('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
   }
 
-  // Se o filme não for encontrado
-  res.status(404).send('Erro: Filme nao encontrado no servidor Nexus.');
+  // Se o canal ou filme não for encontrado
+  res.status(404).send('Erro: ID nao encontrado no servidor Nexus.');
 }
