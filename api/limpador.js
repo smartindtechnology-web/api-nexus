@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   if (id === 'homem-aranha') {
     try {
       // O link da página do player que você abriu no navegador
-      const urlPagina = 'INSIRA_AQUI_O_LINK_DA_PAGINA_ONDE_VOCE_DEU_F12';
+      const urlPagina = 'https://edge1-waw-sprintcdn.r66nv9ed.com/hls2/09/10880/50erk3ov4j9m_o/index-v1-a1.m3u8?t=9Oh9a2prRTpeTTAtNVmyN46OOwYyDwiD9SbTSuAf460&s=1772452814&e=10800&f=54400043&srv=1050&asn=&sp=4000&p=0';
       
       const resposta = await fetch(urlPagina, {
         headers: {
