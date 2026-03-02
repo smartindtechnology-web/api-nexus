@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     try {
       // 1. Aqui você coloca o link da página do PLAYER do filme (não o m3u8)
       // Nota: Precisa ser o link direto da página onde o vídeo roda no Pobreflix/RedeCanais
-      const urlDaPaginaDoPlayer = 'COLOQUE_AQUI_O_LINK_DA_PAGINA_DO_FILME_NO_SITE';
+      const urlDaPaginaDoPlayer = 'https://edge1-waw-sprintcdn.r66nv9ed.com/hls2/09/10880/50erk3ov4j9m_o/master.m3u8?t=WFOctyH17NWZJLkI4DpLXpkW-aWhJTwoXmYHzo1NgUw&s=1772452473&e=10800&f=54400043&srv=1050&asn=&sp=4000&p=0';
       
       // 2. O servidor vai até o site e baixa o HTML da página
       const resposta = await fetch(urlDaPaginaDoPlayer, {
