@@ -1,6 +1,6 @@
 /**
- * Projeto Nexus - Extrator Inteligente
- * Versão: 1.5
+ * Projeto Nexus - Extrator Camuflado
+ * Versão: 1.6
  */
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,36 +10,37 @@ export default async function handler(req, res) {
 
   if (id === 'homem-aranha') {
     try {
-      const urlPagina = 'https://edge1-waw-sprintcdn.r66nv9ed.com/hls2/09/10880/50erk3ov4j9m_o/index-v1-a1.m3u8?t=9Oh9a2prRTpeTTAtNVmyN46OOwYyDwiD9SbTSuAf460&s=1772452814&e=10800&f=54400043&srv=1050&asn=&sp=4000&p=0'; // <--- Link que você abre no navegador
+      const urlPagina = 'https://edge1-waw-sprintcdn.r66nv9ed.com/hls2/09/10880/50erk3ov4j9m_o/index-v1-a1.m3u8?t=9Oh9a2prRTpeTTAtNVmyN46OOwYyDwiD9SbTSuAf460&s=1772452814&e=10800&f=54400043&srv=1050&asn=&sp=4000&p=0'; 
       
       const resposta = await fetch(urlPagina, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Referer': 'https://pobreflix.biz/'
+          // Identidade de um navegador Chrome atualizado
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          // O segredo: Dizemos que já estamos no site do player
+          'Origin': 'https://pobreflix.biz',
+          'Referer': 'https://pobreflix.biz/',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7'
         }
       });
       
       const html = await resposta.text();
 
-      // RADAR 1: Tenta achar o link direto (o que você mandou)
-      const radarDireto = /(https:\/\/[^\s"'<>]+.m3u8[^\s"'<>]*)/i;
-      
-      // RADAR 2: Tenta achar links codificados ou em JSON
-      const radarJSON = /"(https:[^"]+\.m3u8[^"]*)"/i;
+      // Radar aprimorado para pegar o link m3u8 mesmo se houver caracteres de escape (\\)
+      const radar = /(https:[^"'\s<>]+?\.m3u8[^"'\s<>]*)/i;
+      const encontrado = html.match(radar);
 
-      const encontrado = html.match(radarDireto) || html.match(radarJSON);
-
-      if (encontrado && encontrado[1]) {
-        return res.redirect(encontrado[1].replace(/\\/g, '')); // Limpa barras extras se for JSON
-      } else if (encontrado && encontrado[0]) {
-        return res.redirect(encontrado[0]);
+      if (encontrado && encontrado[0]) {
+        // Limpa barras invertidas que o JSON às vezes coloca
+        const linkFinal = encontrado[0].replace(/\\/g, '');
+        return res.redirect(linkFinal);
       } else {
-        // MODO DEBUG: Se falhar, ele cospe os primeiros 500 caracteres do site para a gente ver o que tem lá
-        return res.send("HTML Capturado (Início): " + html.substring(0, 500));
+        // Se ainda falhar, vamos ver se o HTML que veio agora é diferente
+        return res.send("HTML Recebido (Primeiros 300 caracteres): " + html.substring(0, 300));
       }
 
     } catch (erro) {
-      return res.status(500).send('Erro: ' + erro.message);
+      return res.status(500).send('Erro na extração: ' + erro.message);
     }
   }
 
